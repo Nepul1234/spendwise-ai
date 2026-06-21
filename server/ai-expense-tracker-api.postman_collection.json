@@ -1,0 +1,474 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "ai-expense-tracker API",
+    "description": "Complete API collection for the ai-expense-tracker backend.\n\n**Setup:**\n1. Run the app on port 8080\n2. Call **Register** or **Login** — the token is saved to `{{token}}` automatically\n3. All protected endpoints pick up `{{token}}` via the Authorization header\n\n**Collection variables:**\n- `base_url` — `http://localhost:8080`\n- `token` — populated automatically by the Login request",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Registration and login. The Login request automatically saves the JWT to the `{{token}}` collection variable.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Akshay Kumar\",\n  \"email\": \"akshay@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Creates a new user account and returns a JWT access token. The token is identical to what `/api/auth/login` returns, so you can use this to start immediately without a separate login call.\n\nFields:\n- `name` — display name\n- `email` — used as the login username\n- `password` — plain text (hashed with BCrypt server-side)\n\nReturns `accessToken`, `tokenType`, and `expiresInSeconds`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.accessToken) {",
+                  "    pm.collectionVariables.set('token', response.accessToken);",
+                  "    console.log('Token saved from Register:', response.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"akshay@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticates an existing user and returns a JWT access token.\n\nThe post-response script automatically saves `accessToken` from the response body into the `{{token}}` collection variable. All subsequent requests in this collection use that token via `Authorization: Bearer {{token}}`.\n\nToken TTL is 600 seconds (10 minutes) by default."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.accessToken) {",
+                  "    pm.collectionVariables.set('token', response.accessToken);",
+                  "    console.log('Token saved:', response.accessToken);",
+                  "} else {",
+                  "    console.warn('No accessToken in response — check credentials');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "CRUD operations for financial transactions. All requests require a valid JWT.\n\nTransaction types:\n- `EXPENSE` — money out of an account\n- `INCOME` — money into an account\n- `TRANSFER` — money moved between two accounts (requires `toAccountId`)\n\nAmount is always sent as a positive number; the backend stores it as negative for debits.\n\nPayment mode IDs (from seed data):\n- 1 = Credit Card (LIABILITY)\n- 2 = Debit Card (ASSET)\n- 3 = Net Banking (ASSET)\n- 4 = UPI (ASSET)\n- 5 = Cash (ASSET)\n- 6 = Digital Wallet (ASSET)\n\nCategory IDs (from seed data):\n- 1 = Groceries, 2 = Dining Out, 3 = Rent/EMI, 4 = Utilities, 5 = Fuel/Transportation\n- 6 = Health & Medical, 7 = Insurance, 8 = Shopping, 9 = Entertainment & OTT\n- 10 = Education, 11 = Investments, 12 = Gifts & Donations, 13 = Travel & Vacation\n- 14 = Maintenance & Repairs, 15 = Miscellaneous",
+      "item": [
+        {
+          "name": "Create Transaction — Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": null,\n  \"type\": \"EXPENSE\",\n  \"description\": \"Grocery shopping at DMart\",\n  \"amount\": 850.00,\n  \"transactionDate\": \"20-05-2026\",\n  \"paymentModeId\": 4,\n  \"accountId\": 1,\n  \"categoryId\": 1,\n  \"toAccountId\": null,\n  \"transferId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Records an expense transaction. The account balance is reduced by the amount.\n\n- `type`: `EXPENSE`\n- `paymentModeId: 4` = UPI (ASSET type — balance must be sufficient)\n- `categoryId: 1` = Groceries\n- `accountId`: the ID of the account to debit (check your DB for the actual ID created by CmdRunner)\n- `transactionDate` format: `dd-MM-yyyy`"
+          }
+        },
+        {
+          "name": "Create Transaction — Income",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": null,\n  \"type\": \"INCOME\",\n  \"description\": \"May 2026 salary\",\n  \"amount\": 75000.00,\n  \"transactionDate\": \"01-05-2026\",\n  \"paymentModeId\": 3,\n  \"accountId\": 1,\n  \"categoryId\": 15,\n  \"toAccountId\": null,\n  \"transferId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Records an income transaction. The account balance is increased by the amount.\n\n- `type`: `INCOME`\n- `paymentModeId: 3` = Net Banking (ASSET)\n- `categoryId: 15` = Miscellaneous (use appropriate category for salary)"
+          }
+        },
+        {
+          "name": "Create Transaction — Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": null,\n  \"type\": \"TRANSFER\",\n  \"description\": \"Transfer to savings account\",\n  \"amount\": 10000.00,\n  \"transactionDate\": \"20-05-2026\",\n  \"paymentModeId\": 3,\n  \"accountId\": 1,\n  \"categoryId\": 11,\n  \"toAccountId\": 2,\n  \"transferId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Moves money between two accounts owned by the same user. Creates two linked transaction records (a debit on `accountId` and a credit on `toAccountId`) sharing a `transferId` UUID.\n\n- `type`: `TRANSFER`\n- `accountId`: source account (debited)\n- `toAccountId`: destination account (credited)\n- `paymentModeId: 3` = Net Banking"
+          }
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Returns all transactions belonging to the authenticated user, ordered by creation time descending.\n\nEach transaction includes: `transactionId`, `type`, `description`, `amount`, `transactionDate`, linked category, account, and payment mode."
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transactions/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions", "1"]
+            },
+            "description": "Deletes a transaction by ID. The request is scoped to the authenticated user — users cannot delete transactions belonging to other users.\n\nReplace `1` in the URL with the actual transaction ID from the **Get All Transactions** response.\n\nNote: this does **not** reverse the account balance. Use the Update (PATCH) endpoint to do a balance-neutral correction first if needed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Input",
+      "description": "Natural language transaction parsing powered by Google Gemini (gemini-2.0-flash).\n\n**Async flow** (`POST /api/ai-input`):\n1. Submit raw text → get back a `taskId`\n2. Open SSE stream at `GET /api/notifications/status/{taskId}` to receive status updates (PENDING → PROCESSING → COMPLETED)\n3. On COMPLETED, the parsed transaction is automatically saved using the user's default account and payment mode from `UserConfig`\n\n**Sync flow** (`POST /api/ai-input/sync`):\nSubmit raw text → get back a `TransactionRequestDto` immediately. The client then fills in `accountId` and `paymentModeId` and POSTs to `/api/transactions`.\n\nSupported languages: English and Hindi.",
+      "item": [
+        {
+          "name": "Submit NL Input (Async)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rawText\": \"Spent 450 rupees on petrol today\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-input",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ai-input"]
+            },
+            "description": "Submits a free-form text description of a transaction for async AI parsing.\n\nReturns a `taskId` and a confirmation message. The backend queues the task; the scheduler picks it up within ~5 seconds, calls Gemini to parse it, and fires an SSE notification when done.\n\nOnce COMPLETED, the transaction is auto-saved to the DB using the user's default account and payment mode (set in `UserConfig`).\n\nExample inputs:\n- `\"Spent 450 rupees on petrol today\"`\n- `\"Received 5000 from freelance work yesterday\"`\n- `\"Aaj 200 rupaye grocery pe kharch kiye\"` (Hindi)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set('task_id', response.id);",
+                  "    console.log('Task ID saved:', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit NL Input (Sync)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rawText\": \"Paid 1200 for electricity bill on 18th May\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-input/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ai-input", "sync"]
+            },
+            "description": "Synchronously parses a natural language transaction description using Gemini and returns a `TransactionRequestDto` directly — no queuing, no SSE.\n\nThe response has `type`, `description`, `amount`, `transactionDate`, and `categoryId` populated from the AI. `accountId` and `paymentModeId` will be `null` — the client must supply them before POSTing to `/api/transactions`.\n\nUse this when you want to show the user the parsed result for confirmation/editing before saving."
+          }
+        },
+        {
+          "name": "Poll Task Status (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/status/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "status", "{{task_id}}"]
+            },
+            "description": "Opens a Server-Sent Events stream for a specific async AI task. Receives status updates as the task progresses through PENDING → PROCESSING → COMPLETED (or FAILED).\n\n`{{task_id}}` is saved automatically when you run **Submit NL Input (Async)**.\n\nNote: Postman has limited SSE support — use a browser or a dedicated SSE client (e.g. `curl -N`) for best results:\n```\ncurl -N -H 'Authorization: Bearer <token>' http://localhost:8080/api/notifications/status/<taskId>\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Insights",
+      "description": "AI-generated spending insights powered by Google Gemini.\n\nInsights are generated automatically by a background scheduler:\n- **WEEKLY** — every Monday at 09:00\n- **MONTHLY** — 1st of every month at 09:00\n\nEach insight analyses the user's transactions for the relevant lookback window (7 or 30 days) and produces a plain-text summary covering: total income vs expenses, top spending categories, notable patterns, and actionable tips.",
+      "item": [
+        {
+          "name": "Get Weekly Insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/insights?type=WEEKLY",
+              "host": ["{{base_url}}"],
+              "path": ["api", "insights"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "WEEKLY"
+                }
+              ]
+            },
+            "description": "Returns all WEEKLY insights for the authenticated user, ordered most-recent first.\n\nEach insight has: `id`, `type`, `insightText`, `status`, `createdAt` (epoch ms).\n\nInsights are generated every Monday at 09:00 by the scheduler. If none exist yet, the response is an empty array."
+          }
+        },
+        {
+          "name": "Get Monthly Insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/insights?type=MONTHLY",
+              "host": ["{{base_url}}"],
+              "path": ["api", "insights"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "MONTHLY"
+                }
+              ]
+            },
+            "description": "Returns all MONTHLY insights for the authenticated user, ordered most-recent first.\n\nInsights are generated on the 1st of every month at 09:00 by the scheduler, covering the previous 30 days of transactions."
+          }
+        },
+        {
+          "name": "Get All Insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/insights",
+              "host": ["{{base_url}}"],
+              "path": ["api", "insights"]
+            },
+            "description": "Returns all insights (both WEEKLY and MONTHLY) for the authenticated user, ordered most-recent first. Omit the `type` query parameter to get everything."
+          }
+        },
+        {
+          "name": "Get Latest Weekly Insight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/insights/latest?type=WEEKLY",
+              "host": ["{{base_url}}"],
+              "path": ["api", "insights", "latest"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "WEEKLY"
+                }
+              ]
+            },
+            "description": "Returns only the single most recent WEEKLY insight for the authenticated user.\n\nResponds with `204 No Content` if no weekly insight has been generated yet."
+          }
+        },
+        {
+          "name": "Get Latest Monthly Insight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/insights/latest?type=MONTHLY",
+              "host": ["{{base_url}}"],
+              "path": ["api", "insights", "latest"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "MONTHLY"
+                }
+              ]
+            },
+            "description": "Returns only the single most recent MONTHLY insight for the authenticated user.\n\nResponds with `204 No Content` if no monthly insight has been generated yet."
+          }
+        }
+      ]
+    }
+  ]
+}

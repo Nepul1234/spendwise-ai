@@ -1,0 +1,34 @@
+package com.example.ai_expense_tracker.service.ai.parsetask;
+
+import com.example.ai_expense_tracker.model.AiParsingTask;
+import com.example.ai_expense_tracker.model.Status;
+import com.example.ai_expense_tracker.repo.AiParsingTaskRepo;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.query.spi.Limit;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AiParseTaskServiceImpl implements  AiParseTaskService{
+  private final AiParsingTaskRepo repo;
+  @Override
+  public AiParsingTask save(AiParsingTask aiParsingTask) {
+    return repo.save(aiParsingTask);
+  }
+
+  @Override
+  public List<AiParsingTask> getPendingTasks(Status status) {
+    final var limit = new Limit();
+    limit.setMaxRows(13);
+
+    return repo.findAllByStatusOrderByCreatedAtAsc(status, limit);
+  }
+
+  @Override
+  public AiParsingTask getByIdWithAppUser(Long jobId) {
+    return repo.findByIdWithAppUser(jobId)
+        .orElseThrow(()-> new RuntimeException("Ai Parse Task not found with id: " + jobId));
+  }
+}
