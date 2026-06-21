@@ -10,6 +10,12 @@
 
 ---
 
+---
+
+<img width="958" height="654" alt="Image" src="https://github.com/user-attachments/assets/fc6fa5a0-031b-44c1-864a-d25030807448" />
+
+---
+
 ## What it does
 
 Instead of filling out forms, you describe a transaction in natural language — _"spent 500 on groceries yesterday at bhatbhateni"_ — and Gemini AI extracts the amount, category, date, and merchant automatically. SpendWise AI also generates weekly and monthly spending insight reports on a schedule, so you always know where your money is going.
@@ -22,15 +28,11 @@ Instead of filling out forms, you describe a transaction in natural language —
 
 Split-layout auth screens with a live AI parse preview on the left side panel.
 
-![Login](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/login.png)
-
 ---
 
 ### Dashboard
 
 At-a-glance financial overview with four KPI cards (net worth, monthly income, monthly spend, available budget), a 30-day spending bar chart, category donut breakdown, account balance cards, recent transactions, and smart alerts.
-
-![Dashboard](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/dashboard.png)
 
 ---
 
@@ -38,15 +40,11 @@ At-a-glance financial overview with four KPI cards (net worth, monthly income, m
 
 Full transaction history grouped by date with inflow / outflow / net summary strip. Filter by type (Expense / Income / Transfer) or search by merchant and note.
 
-![Transactions](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/transactions.png)
-
 ---
 
 ### Add Transaction
 
 Manual entry form with type selector, amount, merchant, account, category, payment mode (Card / Cash / Bank / Wallet / UPI), and a live preview of the transaction row before saving.
-
-![Add Transaction](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/add-transaction.png)
 
 ---
 
@@ -54,15 +52,11 @@ Manual entry form with type selector, amount, merchant, account, category, payme
 
 Type anything — the app submits to Gemini, shows a parsing animation, then presents the extracted fields (type, amount, category, date) for confirmation before saving. Keeps a history of recent AI parses with example prompts to get started.
 
-![AI Input](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/ai-input.png)
-
 ---
 
 ### Insights
 
 Weekly and monthly AI-generated narrative summaries with highlighted numbers, a bullet point highlights grid, daily spend chart for the period, category breakdown, and a vs-last-period comparison table.
-
-![Insights](https://github.com/Nepul1234/spendwise-ai/raw/main/docs/insights.png)
 
 ---
 
